@@ -18,18 +18,19 @@ public class Acquisto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Column(name = "id")
     private Long id;
 
     @Column(name = "data")
     private Date data;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    // @JoinColumn(name = "acquisto_id") // Correggi il nome della colonna per il mapping corretto
+
+    @OneToMany(mappedBy = "acquisto", cascade = CascadeType.ALL)
     private List<ProdottoInVendita> prodottoInVenditaList;
 
     @ManyToOne
-    @JoinColumn(name = "utente_id") // Correggi il nome della colonna per il mapping corretto
+    @JoinColumn(name = "utente_id")
     private Utente utente;
 
 }

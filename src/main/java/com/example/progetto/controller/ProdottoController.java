@@ -1,10 +1,10 @@
 package com.example.progetto.controller;
 
-import com.example.progetto.Config.AuthenticationService;
+
+import com.example.progetto.DTO.IncrementaProdottoDTO;
+import com.example.progetto.DTO.ProdottoDTO;
 import com.example.progetto.entities.Prodotto;
-import com.example.progetto.entities.Utente;
 import com.example.progetto.service.ProdottoService;
-import com.example.progetto.service.UtenteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,27 +12,33 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Map;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/prodotti")
 public class ProdottoController {
 
     @Autowired
     private ProdottoService prodottoService;
 
-
+//vine usato
     @GetMapping
-    public ResponseEntity<List<Prodotto>> getAllProdotti() {
+    public ResponseEntity<?> getAllProdotti() {
         List<Prodotto> prodotti = prodottoService.getAllProdotti();
-        return new ResponseEntity<>(prodotti, HttpStatus.OK);
+        List<ProdottoDTO> prodottiDTO= new ArrayList<>(prodotti.toArray().length);
+        for(Prodotto p: prodotti){
+            prodottiDTO.add(new ProdottoDTO(p));
+        }
+        return new ResponseEntity<>(prodottiDTO, HttpStatus.OK);
     }
-
+//viene usato
     @GetMapping("/{id}")
-    public ResponseEntity<Prodotto> getProdottoById(@PathVariable int id) {
+    public ResponseEntity<?> getProdottoById(@PathVariable int id) {
         Prodotto prodotto = prodottoService.getProdottoById(id);
+        ProdottoDTO prodottoDTO=new ProdottoDTO(prodotto);
         if (prodotto != null) {
             return new ResponseEntity<>(prodotto, HttpStatus.OK);
         } else {
@@ -40,69 +46,104 @@ public class ProdottoController {
         }
     }
 
+//viene usato
+
     @PostMapping("/nuovoProdotto")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Prodotto> createProdotto(@RequestBody @Valid Prodotto prodotto) {
-        Prodotto newProdotto = prodottoService.saveProdotto(prodotto);
-        return new ResponseEntity<>(newProdotto, HttpStatus.CREATED);
+    public ResponseEntity<?> createOrUpdateProdotto(@RequestBody @Valid ProdottoDTO prodotto) {
+
+        Prodotto existingProdotto = prodottoService.getProdottoByNomeAndMarcaAndTaglia(prodotto.getNome(), prodotto.getMarca(), prodotto.getTaglia());
+
+        if (existingProdotto != null) {
+            // Il prodotto esiste già, quindi aggiorna la quantità
+            existingProdotto.setQuantita(existingProdotto.getQuantita() + prodotto.getQuantita());
+            Prodotto updatedProdotto = prodottoService.saveProdotto(existingProdotto);
+            ProdottoDTO prod= new ProdottoDTO(updatedProdotto); //serve come semplice risposta1
+            return new ResponseEntity<>(prod, HttpStatus.OK);
+        } else {
+            // Il prodotto non esiste, quindi crea un nuovo prodotto
+            Prodotto newProdotto = prodottoService.saveProdotto(prodotto);
+            ProdottoDTO prod= new ProdottoDTO(newProdotto);
+            return new ResponseEntity<>(prod, HttpStatus.CREATED);
+        }
     }
 
-    @DeleteMapping("eliminaProdotto/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+
+
+//viene usato
+    @DeleteMapping("/eliminaProdotto/{id}")
     public ResponseEntity<Void> deleteProdotto(@PathVariable int id) {
-        prodottoService.deleteProdottoById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        System.out.println("eliminatooooo"+id);
+        try {
+            prodottoService.deleteProdottoById(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            // In caso di errore durante l'eliminazione, restituisce stato HTTP 500 (Internal Server Error)
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+//viene usato
     @GetMapping("/modello/{modello}")
-    public ResponseEntity<List<Prodotto>> getProdottiByModello(@PathVariable String modello) {
+    public ResponseEntity<?> getProdottiByModello(@PathVariable String modello) {
         List<Prodotto> prodotti = prodottoService.getProdottoByModello(modello);
-        return new ResponseEntity<>(prodotti, HttpStatus.OK);
+        List<ProdottoDTO> prodottiDTO= new ArrayList<>(prodotti.toArray().length);
+        for(Prodotto p: prodotti){
+            prodottiDTO.add(new ProdottoDTO(p));
+        }
+        return new ResponseEntity<>(prodottiDTO, HttpStatus.OK);
     }
+
+
+    //viene usato
 
     @GetMapping("/{nome}/{marca}")
-    public ResponseEntity<List<Prodotto>> getTagliaByNomeAndMarca(@PathVariable String nome,@PathVariable String marca){
-        List<Prodotto> prodotti= prodottoService.getProdottiPerNomeEMarca(nome, marca);
-        return new ResponseEntity<>(prodotti, HttpStatus.OK);
+    public ResponseEntity<?> getTagliaByNomeAndMarca(@PathVariable String nome, @PathVariable String marca) {
+        List<Prodotto> prodotti = prodottoService.getProdottiPerNomeEMarca(nome, marca);
+        List<ProdottoDTO> prodottiDTO= new ArrayList<>(prodotti.toArray().length);
+        for(Prodotto p: prodotti){
+            prodottiDTO.add(new ProdottoDTO(p));
+        }
+        return new ResponseEntity<>(prodottiDTO, HttpStatus.OK);
     }
 
-    //DA CANCELLARE
-    @Autowired
-    private UtenteService utenteService;
 
-    @GetMapping("/utenti/{email}")
-    @PreAuthorize("#email == authentication.principal.username or hasAuthority('ADMIN')")
-    public ResponseEntity<Utente> getByEmail(@PathVariable @Valid String email) {
-        Utente utente = utenteService.getUtenteByEmail(email);
-        if (utente != null) {
-            return new ResponseEntity<>(utente, HttpStatus.OK);
+    //viene usato
+    @GetMapping("/quantita/{nome}/{marca}/{taglia}")
+    public ResponseEntity<Integer> getQuantitaByNomeMarcaTaglia(@PathVariable String nome, @PathVariable String marca, @PathVariable String taglia) {
+        int quantita = prodottoService.getQuantitaByNomeMarcaTaglia(nome, marca, taglia);
+        return new ResponseEntity<>(quantita, HttpStatus.OK);
+    }
+
+
+    //non viene usato
+    @PostMapping("/modificaProdotto")
+    public ResponseEntity<?> modificaProdotto(@RequestBody @Valid ProdottoDTO prodottoDTO) {
+        Prodotto prodottoModificato = prodottoService.modificaProdotto(prodottoDTO);
+
+        if (prodottoModificato != null) {
+            ProdottoDTO prodottoDTOmodificato = new ProdottoDTO(prodottoModificato);
+            return new ResponseEntity<>(prodottoDTOmodificato, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @Autowired
-    private  AuthenticationService authService;
 
 
-    @PostMapping("/api/login")
-    public ResponseEntity<?> accesso(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        String password = request.get("password");
+    //viene usato
+    @PostMapping("/incrementoProdotto")
+    public ResponseEntity<?> incrementaProdotto(@RequestBody @Valid IncrementaProdottoDTO p) {
 
-        // Esegui l'autenticazione e generazione del token JWT
-        AuthenticationService.JwtAuthenticationResponse jwtResponse = authService.accesso(email, password);
+        int quantita= prodottoService.getQuantitaByNomeMarcaTaglia(p.getNome(), p.getMarca(), p.getTaglia());
+        System.out.println("attuale quantita: "+p.getIncremento()+" per il prod: "+p.getNome());
+        Prodotto prodottoModificato = prodottoService.setQuantitaByNomeMarcaTaglia(p.getNome(), p.getMarca(), p.getTaglia(), quantita+p.getIncremento());
 
-        if (jwtResponse != null) {
-            return ResponseEntity.ok(jwtResponse);
+        if (prodottoModificato != null) {
+            ProdottoDTO prodottoDTOmodificato = new ProdottoDTO(prodottoModificato);
+            return new ResponseEntity<>(prodottoDTOmodificato, HttpStatus.OK);
         } else {
-            // Ritorna una risposta di errore se l'accesso non è riuscito
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Accesso non riuscito");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-
     }
-
-
 }
 

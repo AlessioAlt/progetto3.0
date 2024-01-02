@@ -1,12 +1,4 @@
 spring:
-
-  #security:
-  #oauth2:
-  #resourceserver:
-  #jwt:
-  #jwk-set-uri: http://localhost:8080/realms/PSWprojectRealm/protocol/openid-connect/certs
-  #issuer-uri: http://localhost:8080/realms/PSWprojectRealm
-  ##http://localhost:8080/realms/PSWprojectRealm/.well-known/openid-configuration http per trovare i jwt
   application:
     name: Progetto3.0-API
 
@@ -24,26 +16,11 @@ spring:
     password: alessio
     driver-class-name: org.postgresql.Driver
 
+  main:
+    allow-bean-definition-overriding: true
+
+
 server:
   port: 9090
-      #server:
-      #ssl:
-      #key-store-password: password_certificate
-      #key-store-type: PKCS12
-      #key-store: /home/debian/ssl-cert/certificate.p12
-      #compression:
-      # enabled: 'true'
-      #port: '8081'
 
-      #security:( non scommentare)
-      #require-ssl: 'true'
 
-      #keycloak:
-      #resource: client-rest-api
-
-      #logging:
-      #level:
-      # it:
-      #  aless: DEBUG
-      #org:
-    # springframework: INFO

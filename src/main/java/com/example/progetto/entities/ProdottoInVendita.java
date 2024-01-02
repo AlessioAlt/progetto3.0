@@ -1,5 +1,6 @@
 package com.example.progetto.entities;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,11 +18,12 @@ public class ProdottoInVendita {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "prodotto")
+    @JoinColumn(name = "prodotto_id")
     private Prodotto prodotto;
 
+
     @ManyToOne
-    @JoinColumn(name = "acquisto")
+    @JoinColumn(name = "acquisto_id")
     private Acquisto acquisto;
 
     @Column

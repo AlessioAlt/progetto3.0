@@ -25,5 +25,7 @@ public interface AcquistoRepository extends JpaRepository<Acquisto, Long> {
 
     // Trova tutti gli acquisti effettuati da un determinato utente che contengono un certo prodotto in vendita
     List<Acquisto> findByUtenteAndProdottoInVenditaListContaining(Utente utente, ProdottoInVendita prodotto);
+
+
 }
 

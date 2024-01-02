@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,4 +36,7 @@ public class Utente {
 
     @Column(name = "ruolo", nullable = false)
     private boolean ruolo;
+
+    @OneToMany(mappedBy = "utente", cascade = CascadeType.ALL)
+    private List<Acquisto> acquisti;
 }

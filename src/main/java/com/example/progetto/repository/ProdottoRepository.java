@@ -26,6 +26,9 @@ public interface ProdottoRepository extends JpaRepository<Prodotto, Integer> {
 
     List<Prodotto> findByMarcaAndTaglia(String modello, String taglia);
 
+    Prodotto findByNomeAndMarcaAndTaglia(String nome, String marca, String taglia);
+
+
     @Query("select p from Prodotto p where p.prezzo < ?1")
     List<Prodotto> findBysottoIlPrezzo(double prezzo);
 

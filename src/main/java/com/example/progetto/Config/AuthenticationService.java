@@ -26,14 +26,15 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public JwtAuthenticationResponse registrazione(Utente u) {
-
+        u.setPassword(passwordEncoder.encode(u.getPassword()));
 
         User.UserBuilder userBuilder = User.builder()
                 .username(u.getEmail())
-                .password(passwordEncoder.encode(u.getPassword()))
+                .password(u.getPassword())
                 .authorities(ruoli(u.isRuolo()));
 
         UserDetails userDetails = userBuilder.build();
+
 
         userRepository.save(u);
 
@@ -72,4 +73,7 @@ public class AuthenticationService {
             return token;
         }
     }
+
+
+
 }

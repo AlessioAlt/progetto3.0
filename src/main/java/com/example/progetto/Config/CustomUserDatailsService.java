@@ -40,7 +40,6 @@ public class CustomUserDatailsService implements UserDetailsService {
         } else {
             authorities.add(new SimpleGrantedAuthority("USER"));
         }
-        System.out.println( new User(utente.getEmail(), utente.getPassword(), authorities).toString());
 
         return new User(utente.getEmail(), utente.getPassword(), authorities);
     }

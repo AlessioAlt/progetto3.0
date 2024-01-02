@@ -1,59 +1,64 @@
 package com.example.progetto.controller;
 
-import com.example.progetto.entities.Acquisto;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import com.example.progetto.repository.AcquistoRepository;
 
+import com.example.progetto.DTO.AcquistoDTO;
+import com.example.progetto.DTO.AcquistoRequest;
+import com.example.progetto.DTO.ProdottoAcquistatoDTO;
+import com.example.progetto.DTO.ProdottoCarrello;
+import com.example.progetto.entities.Acquisto;
+import com.example.progetto.entities.ProdottoInVendita;
+import com.example.progetto.entities.Utente;
+import com.example.progetto.service.AcquistoService;
+import com.example.progetto.service.UtenteService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+
+@EnableMethodSecurity
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/acquisti")
 public class AcquistoController {
-
-    private final AcquistoRepository acquistoRepository;
+    //deve gestire acquisto è prodotto_in_vendita
 
     @Autowired
-    public AcquistoController(AcquistoRepository acquistoRepository) {
-        this.acquistoRepository = acquistoRepository;
-    }
+    private AcquistoService acquistoService;
+    @Autowired
+    UtenteService utenteService;
 
-    // Metodo per ottenere tutti gli acquisti
-    @GetMapping
-    public ResponseEntity<?> getAllAcquisti() {
-        return ResponseEntity.ok(acquistoRepository.findAll());
-    }
 
-    // Metodo per ottenere un acquisto dato il suo ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getAcquistoById(@PathVariable Long id) {
-        return ResponseEntity.of(acquistoRepository.findById(id));
-    }
-
-    // Metodo per creare un nuovo acquisto
-    @PostMapping
-    public ResponseEntity<?> createAcquisto(@RequestBody Acquisto nuovoAcquisto) {
-        Acquisto savedAcquisto = acquistoRepository.save(nuovoAcquisto);
-        return ResponseEntity.ok(savedAcquisto);
-    }
-
-    // Metodo per aggiornare un acquisto esistente
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateAcquisto(@PathVariable Long id, @RequestBody Acquisto acquisto) {
-        if (!acquistoRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+    @PreAuthorize("#acquisto.getEmail() == authentication.principal.username")
+    @PostMapping("/generaAcquisto")
+    public ResponseEntity<?> generaAcquisto(@RequestBody AcquistoRequest acquisto) {
+        Utente utente= utenteService.getUtenteByEmail(acquisto.getEmail());
+        List<ProdottoCarrello> prodottiCarrello= acquisto.getProdotti();
+       try {
+            Acquisto nuovoAcquisto = acquistoService.generaAcquisto(utente, prodottiCarrello);
+           AcquistoDTO acquistoDTO= new AcquistoDTO(nuovoAcquisto.getId(), nuovoAcquisto.getData(), nuovoAcquisto.getUtente().getEmail());
+            return new ResponseEntity<>(acquistoDTO, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); //quantita immessa maggiore a quella disponibile
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); //probemi nella creazione dell'acquisto
         }
-        acquisto.setId(id);
-        Acquisto updatedAcquisto = acquistoRepository.save(acquisto);
-        return ResponseEntity.ok(updatedAcquisto);
+    }
+    @PreAuthorize("hasAuthority('ADMIN') or #email == authentication.principal.username")
+    @GetMapping("/acquistiUtente/{email}")
+    public ResponseEntity<?> acquistiUtente(@PathVariable String email) {
+        try {
+            List<ProdottoAcquistatoDTO> prodotti = acquistoService.getProdottiInVenditaByUtente(email);
+            return new ResponseEntity<>(prodotti, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    // Metodo per eliminare un acquisto dato il suo ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAcquisto(@PathVariable Long id) {
-        if (!acquistoRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        acquistoRepository.deleteById(id);
-        return ResponseEntity.ok().build();
-    }
+
+
 }

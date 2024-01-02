@@ -1,5 +1,6 @@
 package com.example.progetto.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "prodotto")
+@Table(name = "prodotto", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"nome", "marca","taglia"})
+}) //rendo unique  <nome, marca,taglia>
 public class Prodotto {
 
     @Id
@@ -40,8 +43,12 @@ public class Prodotto {
     @Column(name = "immagine")
     private String immagine;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    //@JoinColumn(name = "prodottoInVenditaList")
+    @Version  //optimistic lock
+    @Column(name="versione", nullable=false)
+    @JsonIgnore
+    private long versione;
+
+    @OneToMany(mappedBy = "prodotto", cascade = CascadeType.ALL)
     private List<ProdottoInVendita> prodottoInVenditaList;
 
 }
