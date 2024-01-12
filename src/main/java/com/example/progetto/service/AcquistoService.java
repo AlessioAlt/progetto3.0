@@ -1,8 +1,7 @@
 package com.example.progetto.service;
 
-import com.example.progetto.DTO.IncrementaProdottoDTO;
 import com.example.progetto.DTO.ProdottoAcquistatoDTO;
-import com.example.progetto.DTO.ProdottoCarrello;
+import com.example.progetto.DTO.DettaglioProdottoQntDTO;
 import com.example.progetto.entities.Acquisto;
 import com.example.progetto.entities.Prodotto;
 import com.example.progetto.entities.ProdottoInVendita;
@@ -30,21 +29,6 @@ public class AcquistoService {
     @Autowired
     private UtenteService utenteService;
 
-
-    public List<Acquisto> getAllAcquisti() {
-        return acquistoRepository.findAll();
-    }
-
-    public Acquisto getAcquistoById(Long id) {
-        return acquistoRepository.findById(id).orElse(null);
-    }
-
-    public List<Acquisto> getAcquistiByUtente(Utente u){
-        return acquistoRepository.findByUtente(u);
-    }
-
-    //metodi relegati a prodottoInVendita
-
     public List<ProdottoAcquistatoDTO> getProdottiInVenditaByUtente(String email) {
         Utente u= utenteService.getUtenteByEmail(email);
         List<Acquisto> acquisti = acquistoRepository.findByUtente(u);
@@ -69,16 +53,10 @@ public class AcquistoService {
         return ret;
     }
 
-    public List<ProdottoInVendita> getProdottiInVenditaByAcquisto(Acquisto a){
-        return prodottoInVenditaRepository.findByAcquisto(a);
-
-    }
-
-
 
     //genera acquisto
-    @Transactional
-    public Acquisto generaAcquisto(Utente utente, List<ProdottoCarrello> prodottiCarrello) {
+    @Transactional//(rollbackOn = )
+    public Acquisto generaAcquisto(Utente utente, List<DettaglioProdottoQntDTO> dettProdList) {
         // Crea obj  acquisto
         //("prima di creare acquisto");
         Date dataAcquisto = new Date(System.currentTimeMillis());
@@ -89,35 +67,34 @@ public class AcquistoService {
         //("acquisto generato e salvato");
 
 
-        for (ProdottoCarrello prodottoCarrello : prodottiCarrello) {
+        for (DettaglioProdottoQntDTO prodottoInAcquisto : dettProdList) {
 
             Prodotto prodotto = prodottoService.getProdottoByNomeAndMarcaAndTaglia(
-                    prodottoCarrello.getNome(),
-                    prodottoCarrello.getMarca(),
-                    prodottoCarrello.getTaglia()
+                    prodottoInAcquisto.getNome(),
+                    prodottoInAcquisto.getMarca(),
+                    prodottoInAcquisto.getTaglia()
             );
             int quantAttuale= prodottoService.getQuantitaByNomeMarcaTaglia(prodotto.getNome(),
                     prodotto.getMarca(),
                     prodotto.getTaglia());
 
             // Verifica la disponibilità del prodotto
-            if (prodotto != null && quantAttuale>= prodottoCarrello.getQuantita()) {
-               // System.out.println("Entro nell'if");
+            if (prodotto != null && quantAttuale>= prodottoInAcquisto.getQuantita()) {
+
                 ProdottoInVendita prodottoInVendita = new ProdottoInVendita();
                 prodottoInVendita.setProdotto(prodotto);
                 prodottoInVendita.setAcquisto(nuovoAcquisto);
-                prodottoInVendita.setQuantita(prodottoCarrello.getQuantita());
+                prodottoInVendita.setQuantita(prodottoInAcquisto.getQuantita());
                 prodottoService.setQuantitaByNomeMarcaTaglia(prodotto.getNome(),
                         prodotto.getMarca(),
-                        prodotto.getTaglia(), (quantAttuale-prodottoCarrello.getQuantita()));
+                        prodotto.getTaglia(), (quantAttuale- prodottoInAcquisto.getQuantita()));
                 prodottoInVenditaRepository.save(prodottoInVendita);
-                //System.out.println(" prod in vendita creato");
             } else {
-                System.out.println("sono entrato nell'else di acquisto ");
+
                 throw new IllegalArgumentException();
             }
+
         }
-        System.out.println("esco fuori dal for");
         return nuovoAcquisto;
     }
 

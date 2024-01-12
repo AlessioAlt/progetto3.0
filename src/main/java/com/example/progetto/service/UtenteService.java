@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.example.progetto.repository.UtenteRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UtenteService {
@@ -33,14 +32,6 @@ public class UtenteService {
     }
 
 
-
-    public Utente addUtente(Utente utente) {
-        // Crittografa la password prima di salvarla
-        String rawPassword = utente.getPassword();
-        String encodedPassword = passwordEncoder.encode(rawPassword);
-        utente.setPassword(encodedPassword);
-        return utenteRepository.save(utente);
-    }
     @Transactional
     public void deleteUtenteById(Long id) {
         utenteRepository.deleteById(id);

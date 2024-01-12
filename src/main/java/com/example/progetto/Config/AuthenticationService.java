@@ -36,6 +36,7 @@ public class AuthenticationService {
         UserDetails userDetails = userBuilder.build();
 
 
+
         userRepository.save(u);
 
         String jwt = jwtService.generateToken(userDetails);

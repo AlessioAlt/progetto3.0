@@ -24,7 +24,7 @@ public class ProdottoController {
     @Autowired
     private ProdottoService prodottoService;
 
-//vine usato
+
     @GetMapping
     public ResponseEntity<?> getAllProdotti() {
         List<Prodotto> prodotti = prodottoService.getAllProdotti();
@@ -34,7 +34,17 @@ public class ProdottoController {
         }
         return new ResponseEntity<>(prodottiDTO, HttpStatus.OK);
     }
-//viene usato
+
+    @GetMapping("/univoci")
+    public ResponseEntity<?> getProdottiUnivoci() {
+        List<Prodotto> prodotti = prodottoService.getProdUnivoci();
+        List<ProdottoDTO> prodottiDTO= new ArrayList<>(prodotti.toArray().length);
+        for(Prodotto p: prodotti){
+            prodottiDTO.add(new ProdottoDTO(p));
+        }
+        return new ResponseEntity<>(prodottiDTO, HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getProdottoById(@PathVariable int id) {
         Prodotto prodotto = prodottoService.getProdottoById(id);
@@ -46,7 +56,7 @@ public class ProdottoController {
         }
     }
 
-//viene usato
+
 
     @PostMapping("/nuovoProdotto")
     public ResponseEntity<?> createOrUpdateProdotto(@RequestBody @Valid ProdottoDTO prodotto) {
@@ -69,10 +79,8 @@ public class ProdottoController {
 
 
 
-//viene usato
     @DeleteMapping("/eliminaProdotto/{id}")
     public ResponseEntity<Void> deleteProdotto(@PathVariable int id) {
-        System.out.println("eliminatooooo"+id);
         try {
             prodottoService.deleteProdottoById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -82,7 +90,7 @@ public class ProdottoController {
         }
     }
 
-//viene usato
+
     @GetMapping("/modello/{modello}")
     public ResponseEntity<?> getProdottiByModello(@PathVariable String modello) {
         List<Prodotto> prodotti = prodottoService.getProdottoByModello(modello);
@@ -94,7 +102,7 @@ public class ProdottoController {
     }
 
 
-    //viene usato
+
 
     @GetMapping("/{nome}/{marca}")
     public ResponseEntity<?> getTagliaByNomeAndMarca(@PathVariable String nome, @PathVariable String marca) {
@@ -107,7 +115,7 @@ public class ProdottoController {
     }
 
 
-    //viene usato
+
     @GetMapping("/quantita/{nome}/{marca}/{taglia}")
     public ResponseEntity<Integer> getQuantitaByNomeMarcaTaglia(@PathVariable String nome, @PathVariable String marca, @PathVariable String taglia) {
         int quantita = prodottoService.getQuantitaByNomeMarcaTaglia(nome, marca, taglia);
@@ -115,7 +123,7 @@ public class ProdottoController {
     }
 
 
-    //non viene usato
+    // non usato ma potrebbe essere utile per future implementazioni
     @PostMapping("/modificaProdotto")
     public ResponseEntity<?> modificaProdotto(@RequestBody @Valid ProdottoDTO prodottoDTO) {
         Prodotto prodottoModificato = prodottoService.modificaProdotto(prodottoDTO);
@@ -130,7 +138,7 @@ public class ProdottoController {
 
 
 
-    //viene usato
+
     @PostMapping("/incrementoProdotto")
     public ResponseEntity<?> incrementaProdotto(@RequestBody @Valid IncrementaProdottoDTO p) {
 

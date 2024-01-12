@@ -2,7 +2,6 @@ package com.example.progetto.controller;
 
 import com.example.progetto.Config.AuthenticationService;
 import com.example.progetto.entities.Utente;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,19 +52,6 @@ public final class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Registrazione non riuscita");
         }
     }
-
-
-/*
-
-    @GetMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
-        }
-        return "Logout effettuato";
-    }*/
-
 
 }
 

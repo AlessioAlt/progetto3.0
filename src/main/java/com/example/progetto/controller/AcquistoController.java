@@ -2,15 +2,13 @@ package com.example.progetto.controller;
 
 
 import com.example.progetto.DTO.AcquistoDTO;
-import com.example.progetto.DTO.AcquistoRequest;
+import com.example.progetto.DTO.EmailProdottiRequest;
 import com.example.progetto.DTO.ProdottoAcquistatoDTO;
-import com.example.progetto.DTO.ProdottoCarrello;
+import com.example.progetto.DTO.DettaglioProdottoQntDTO;
 import com.example.progetto.entities.Acquisto;
-import com.example.progetto.entities.ProdottoInVendita;
 import com.example.progetto.entities.Utente;
 import com.example.progetto.service.AcquistoService;
 import com.example.progetto.service.UtenteService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,9 +33,9 @@ public class AcquistoController {
 
     @PreAuthorize("#acquisto.getEmail() == authentication.principal.username")
     @PostMapping("/generaAcquisto")
-    public ResponseEntity<?> generaAcquisto(@RequestBody AcquistoRequest acquisto) {
+    public ResponseEntity<?> generaAcquisto(@RequestBody EmailProdottiRequest acquisto) {
         Utente utente= utenteService.getUtenteByEmail(acquisto.getEmail());
-        List<ProdottoCarrello> prodottiCarrello= acquisto.getProdotti();
+        List<DettaglioProdottoQntDTO> prodottiCarrello= acquisto.getProdotti();
        try {
             Acquisto nuovoAcquisto = acquistoService.generaAcquisto(utente, prodottiCarrello);
            AcquistoDTO acquistoDTO= new AcquistoDTO(nuovoAcquisto.getId(), nuovoAcquisto.getData(), nuovoAcquisto.getUtente().getEmail());
@@ -58,6 +56,7 @@ public class AcquistoController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
 

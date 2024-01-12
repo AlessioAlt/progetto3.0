@@ -102,11 +102,9 @@ public class SecurityConfiguration {
                         .requestMatchers(mvcMatcherBuilder.pattern("/prodotti/modello/{modello}")).permitAll()
                         .requestMatchers(mvcMatcherBuilder.pattern("/prodotti/{nome}/{marca}")).permitAll()
                         .requestMatchers(mvcMatcherBuilder.pattern("/prodotti/quantita/{nome}/{marca}/{taglia}")).permitAll()
-                        .requestMatchers(mvcMatcherBuilder.pattern("/prodotti")).hasAuthority("ADMIN")
+                        .requestMatchers(mvcMatcherBuilder.pattern("/prodotti/univoci")).permitAll()
+                        .requestMatchers(mvcMatcherBuilder.pattern("/prodotti")).permitAll()
 
-                        //gestione acquisti, per il momento faccio accesso a tutti
-                        //.requestMatchers(mvcMatcherBuilder.pattern("/acquisti/acquistiUtente/{email}")).permitAll()
-                        //.requestMatchers(mvcMatcherBuilder.pattern("/acquisti/generaAcquisto")).permitAll()
 
                         .anyRequest().authenticated()
                 )

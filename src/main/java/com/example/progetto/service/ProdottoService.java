@@ -7,8 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.progetto.repository.ProdottoRepository;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @jakarta.transaction.Transactional
 @Service
@@ -47,7 +50,25 @@ public class ProdottoService {
         prodottoRepository.deleteById(id);
     }
 
-    public List<Prodotto> getProdottoByModello(String modello){ return prodottoRepository.findByModello(modello);}
+    //public List<Prodotto> getProdottoByModello(String modello){ return prodottoRepository.findByModello(modello);}
+    public List<Prodotto> getProdottoByModello(String modello) {
+        List<Prodotto> allProdotti= prodottoRepository.findByModello(modello);
+        List<Prodotto> ret = new LinkedList<>();
+        for (Prodotto p : allProdotti) {
+            boolean flag = false;
+            for (Prodotto pRet : ret) {
+                if (pRet.getMarca().equals(p.getMarca()) &&
+                        pRet.getNome().equals(p.getNome())) {
+                    flag = true; //se c'è gia un elemento con lo stesso nome è la stessa marca
+                    //non deve aggiungere nulla
+                }
+            }
+            if (!flag) { //non contiene oggetti con lo stesso nome e stessa marca
+                ret.add(p);
+            }
+        }
+        return ret;
+    }
 
 
 
@@ -93,6 +114,28 @@ public class ProdottoService {
 
             return null;
         }
+    }
+
+    public List<Prodotto> getProdUnivoci() {
+        List<Prodotto> allProdotti = prodottoRepository.findAll();
+        List<Prodotto> ret= new LinkedList<>();
+        for(Prodotto p: allProdotti){
+            boolean flag=false;
+            for(Prodotto pRet: ret){
+                if(pRet.getMarca().equals(p.getMarca()) &&
+                pRet.getNome().equals(p.getNome())) {
+                    flag = true; //se c'è gia un elemento con lo stesso nome è la stessa marca
+                                  //non deve aggiungere nulla
+                }
+            }
+            if(!flag){ //non contiene oggetti con lo stesso nome e stessa marca
+                ret.add(p);
+            }
+
+        }
+
+
+        return ret;
     }
 
 
